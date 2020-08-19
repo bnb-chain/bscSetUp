@@ -182,7 +182,7 @@ func createValidators(client *rpc.HTTP, skipDistribute bool) {
 			amount = types.Coin{Denom: "BNB", Amount: 2000000000000}
 		}
 
-		des := msg.Description{Moniker: fmt.Sprintf("The is %s org on BSC network", klist[i].Moniker)}
+		des := msg.Description{Moniker: klist[i].Moniker, Details: fmt.Sprintf("The is %s org on BSC network", klist[i].Moniker), Website: "will coming soon"}
 
 		rate, _ := types.NewDecFromStr("25000000")
 		maxRate, _ := types.NewDecFromStr("90000000")
