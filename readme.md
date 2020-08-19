@@ -103,7 +103,7 @@ create validaror Logan , txHash EA4E527B36A9AFDF8534632F94F43BB9463ED7D4EAE38EE5
 finish create validator
 ```
 
-5. Backup and Notice
+### 5. Backup and Notice
 
 - Make sure you back up `Validators-Secret.json` and keep it safe. Share a copy with manager of Binance Chain Team if possible, Binance Chain team may need use it to governance.
 - Please handle `Consensus-Secret.json` to developer or manager of Binance Chain Team.
