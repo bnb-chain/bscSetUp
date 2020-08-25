@@ -6,13 +6,13 @@
 
 ## Financial Preparation
 
-Prepare an Binance Chain account with at least 752601 BNBs.
+Prepare an Binance Chain account with at least 753601 BNBs.
 
 - 752100 BNB. We will setup 21 validators, 11 of them will delegate 50000 BNBs, 10 of them will delegate 20000 BNB. To cover the createValidator fee and transfer fee, we give each validator more 100 BNB.
 So 752100 = 50000 * 11 + 20000 * 10 + 100 * 21.
-- 500 BNB. This is the initial circulation on BSC for the usage of BSC-relayer. On BC we need lock it on peg account(bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj). 
+- 1500 = 3*500 BNB. This is the initial circulation on BSC for the usage of 3 BSC-relayer. On BC we need lock it on peg account(bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj). 
 - 1 BNB. Need 1 BNB to cover the transfer fee.
-- The total needed balance is 752601 = 752100 + 500 + 1.
+- The total needed balance is 752601 = 753601 + 1500 + 1.
 
 ## How to Get Tool
 
@@ -47,7 +47,7 @@ After initialization, two files `Validators-Secret.json`, `Consensus-Secret.json
 ### 3. Transfer BNB
 
 -  Transfer 752100 BNB to the address `validatorAccount`. You can transfer in anyway you like.
--  Transfer 500 BNB to peg account(bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj).
+-  Transfer 1500 BNB to peg account(bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj).
 
 
 ### 4. Create Validator
