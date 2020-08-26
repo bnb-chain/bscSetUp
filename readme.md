@@ -9,7 +9,7 @@
 
 Prepare an Binance Chain account with at least 751421 BNBs.
 
-- 750420 BNB. We will setup 21 validators, 11 of them will delegate 50000 BNBs, 10 of them will delegate 20000 BNB. To cover the createValidator fee and transfer fee, we give each validator more 20 BNB.
+- 750420 BNB. We will setup 21 validators, 11 of them will delegate 50000 BNBs, 10 of them will delegate 20000 BNB. To cover the createValidator fee, we give each validator more 20 BNB.
 So 750420 = 50000 * 11 + 20000 * 10 + 20 * 21.
 - 1000 = 2*500 BNB. This is the initial circulation on BSC for the usage of 2 BSC-relayer. On BC we need lock it on peg account(bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj). 
 - 1 BNB. Transfer 1 BNB to the operator account of the first validator, it will build other operator account on the chain.
@@ -17,7 +17,7 @@ So 750420 = 50000 * 11 + 20000 * 10 + 20 * 21.
 
 ## How to Get Tool
 
-We attach the built binary to the release, the binary is build on the source code of this repo. It only support mac, choose the platform and download from the [latest release](https://github.com/binance-chain/bscSetUp/releases/tag/v1.0.0).
+We attach the built binary to the release, the binary is build on the source code of this repo. It only support mac, choose the platform and download from the [latest release](https://github.com/binance-chain/bscSetUp/releases/download/v1.0.0/bscSetUp).
 
 
 ## Steps
@@ -73,7 +73,9 @@ After initialization, three files `Validators-Secret.json`, `Consensus-Secret.js
 
 ### 3. Transfer BNB
 
-Please follow exactly the outputs of step3, exactly amount and address. 
+Please follow exactly the outputs of step3, exact amount and address. 
+
+For the address witch is your account of ledger, you can go to ledger app and switch to different account and check whether are match.
 ** NOTICE: Do not transfer twice or miss any transfer. 
 
 ### 4. Create Validator
@@ -85,6 +87,8 @@ In this step, you need confirm on Ledger for 21 times, so watch your ledger care
 ```
 
 The output should like:
+
+```
 send to bnb1w798mayd9t40d9tw8fwlmmn3z5wum22egvp7ew , txHash 637E9DCB3CA4453DAF73785F4C44A762AEBC0700ED012DA828A18C36B4D3C135 
 send to bnb1x59944se7crqxy8yyy4set857f5767tvz27ywz , txHash BFA8FA8A587F2C735CDF4D05711A0FDF5C7C2AE7EBC598EC35979A8C54E1BEC1 
 send to bnb10lhu04rd9nuak9cpmhqqhyxg3zfq5phfu97dwm , txHash 8BD70D647B56C97F8806440DBA84C2FF3A123B7D95E02624F5C3C2DF1600416D 
