@@ -3,31 +3,35 @@
 ## What's For
 1. Create validators for BSC. Binance Smart Chain get 21 validators in main-net launch, this tool is used to set these 21 validators up in a easy and secure way.
 2. A guide to setup the initial circulation on BSC.
+3. Generate the private key for Bsc-relayer.
 
 ## Financial Preparation
 
-Prepare an Binance Chain account with at least 753601 BNBs.
+Prepare an Binance Chain account with at least 751421 BNBs.
 
-- 752100 BNB. We will setup 21 validators, 11 of them will delegate 50000 BNBs, 10 of them will delegate 20000 BNB. To cover the createValidator fee and transfer fee, we give each validator more 100 BNB.
-So 752100 = 50000 * 11 + 20000 * 10 + 100 * 21.
-- 1500 = 3*500 BNB. This is the initial circulation on BSC for the usage of 3 BSC-relayer. On BC we need lock it on peg account(bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj). 
-- 1 BNB. Need 1 BNB to cover the transfer fee.
-- The total needed balance is 752601 = 753601 + 1500 + 1.
+- 750420 BNB. We will setup 21 validators, 11 of them will delegate 50000 BNBs, 10 of them will delegate 20000 BNB. To cover the createValidator fee and transfer fee, we give each validator more 20 BNB.
+So 750420 = 50000 * 11 + 20000 * 10 + 20 * 21.
+- 1000 = 2*500 BNB. This is the initial circulation on BSC for the usage of 2 BSC-relayer. On BC we need lock it on peg account(bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj). 
+- 1 BNB. Transfer 1 BNB to the operator account of the first validator, it will build other operator account on the chain.
+- The total needed balance is 751421 = 750420 + 1000 + 1.
 
 ## How to Get Tool
 
-We attach the built binary to the release, the binary is build on the source code of this repo. It support mac and linux, choose the platform and download from the [latest release](https://github.com/binance-chain/bscSetUp/releases/tag/v1.0.0).
+We attach the built binary to the release, the binary is build on the source code of this repo. It only support mac, choose the platform and download from the [latest release](https://github.com/binance-chain/bscSetUp/releases/tag/v1.0.0).
 
 
 ## Steps
 
-### 1. Rename the binary
+### 1. Get the binary
 
-- If your platfrom is `mac`, do `mv bscSetUp_mac bscSetUp`
-- If your platfrom is `linux`, do `mv bscSetUp_linux bscSetUp`
+- `wget https://github.com/binance-chain/bscSetUp/releases/download/v1.0.0/bscSetUp`
 - `chmod +x bscSetUp`
 
-### 2. Init Validator Accounts.
+### 2. Connect to ledger
+
+Connect your ledger to desktop and enter Binance Chain app, and you should see: `Binance Chain Ready` on the ledger app.
+
+### 3. Init Validator Accounts.
 
 ```
 ./bscSetUp init
@@ -35,75 +39,92 @@ We attach the built binary to the release, the binary is build on the source cod
 The output should be like:
 ```
 Validators-Secret.json is generated. It contains all the private key for all 21 validators, Please do backup this file and keep it safe, but do not remove or rename this before everything is done
-Consensus-Secret.json is generated. It contains the consensus private key needed for running BSC validator, please back it up too and handle it to developer.
-Now please do transfer exact 752100 BNB to bnb1vyrxpt7v259zwqcgvyy4vulfvz3655dxw2fr4j, the address is the field 'operator_address' of the first item in file Validators-Secret.json, pleased do double check. After that we can continue to create validators. 
+Consensus-Secret.json is generated. It contains the consensus private key needed for running BSC validator, please back it up too and handle it to manager of Binance Chain team.
+Relayer-Secret.json is generated. It contains the relayer private key for bsc-relayer, please back it up too and handle it to manager of Binance Chain team.
+do transfer exact   1   BNB to bnb1w0cmzm0n4qxcu80kp36g2q5fg24awjvytx4vaz which is the operator account of first validator, it will create other operator accounts 
+do transfer exact 50020 BNB to bnb1c346qk3yfk89lzcacwzxsx402rv25gu6zqxvhc which is the index 0 of your fisrt account of ledger 
+do transfer exact 50020 BNB to bnb1je2uaqkeulh0gxeywu3qgm7rqzvvxv6gshx5h0 which is the index 1 of your fisrt account of ledger 
+do transfer exact 50020 BNB to bnb1a7zdxgyteppc9h0css5e8ur482tvs04aap3y7p which is the index 2 of your fisrt account of ledger 
+do transfer exact 50020 BNB to bnb1dmj4v06f8fl3ng6rcl0q2fd9fcn4dgtx4ytwcs which is the index 3 of your fisrt account of ledger 
+do transfer exact 50020 BNB to bnb1g845fhf676u80japr2ecev6vpsvdsap5803ge2 which is the index 4 of your fisrt account of ledger 
+do transfer exact 50020 BNB to bnb1fzdz6hrs39f8fq3pvlx5e7jttwkrxsgvw0c76c which is the index 5 of your fisrt account of ledger 
+do transfer exact 50020 BNB to bnb1tx39qu98952j7supveayjstc0yh42a6sh9g25l which is the index 6 of your fisrt account of ledger 
+do transfer exact 50020 BNB to bnb15v9apdlp0hstpzdqa9jk2w8flcjypzz72k67g9 which is the index 7 of your fisrt account of ledger 
+do transfer exact 50020 BNB to bnb1x7hxnj3ywcfzkshedjahy50a26jwueykxu7nst which is the index 8 of your fisrt account of ledger 
+do transfer exact 50020 BNB to bnb1egyjxddkmu3uwujrl5v2uwude8z693p8e7vfkr which is the index 9 of your fisrt account of ledger 
+do transfer exact 50020 BNB to bnb1v7ar6cjzacmqzhgd0hujh95yqz38ed94nx0phd which is the index 10 of your fisrt account of ledger 
+do transfer exact 20020 BNB to bnb1nzpsz4nw20hu5j7rt00ygzhrytwjj94aknl045 which is the index 11 of your fisrt account of ledger 
+do transfer exact 20020 BNB to bnb14psh4ndzp837yjaf743dfp2yl9a0ptww5jnuq7 which is the index 12 of your fisrt account of ledger 
+do transfer exact 20020 BNB to bnb1ezxlxvvj3qwverm846f7zulm9pt3zckcafptqr which is the index 13 of your fisrt account of ledger 
+do transfer exact 20020 BNB to bnb1py2t646qr2fxcd7pvajx0jdlsn4zwgcjcrfrah which is the index 14 of your fisrt account of ledger 
+do transfer exact 20020 BNB to bnb1kax5qntcvhusqpj9psp8qt7g5q6xgj7ejm6r53 which is the index 15 of your fisrt account of ledger 
+do transfer exact 20020 BNB to bnb13rzhx89axcccvzdg3yj2yfd4f96374wfp9kzan which is the index 16 of your fisrt account of ledger 
+do transfer exact 20020 BNB to bnb1cg429w0alnpg9vjlj3vmwymkm62akyuphvfnja which is the index 17 of your fisrt account of ledger 
+do transfer exact 20020 BNB to bnb18vfxruey7kgzrudzzuqm89cwgecm8l7rph7kju which is the index 18 of your fisrt account of ledger 
+do transfer exact 20020 BNB to bnb10054c8gfuhm4ksjkd69kczshytd3a6q2t239lg which is the index 19 of your fisrt account of ledger 
+do transfer exact 20020 BNB to bnb10eh8cecquc7cxqeu05qg9tqw5d4n5hv3wfy0yg which is the index 20 of your fisrt account of ledger 
+do transfer exact 1000 BNB to bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj which is the peggy account 
 ```
-After initialization, two files `Validators-Secret.json`, `Consensus-Secret.json` will be generated.
+After initialization, three files `Validators-Secret.json`, `Consensus-Secret.json`, `Relayer-Secret.json` will be generated.
 
 - `Validators-Secret.json` contains all private keys, do back up it immediately and keep it safe, do not reveal it to anyone.
 - `Consensus-Secret.json` only contains the consensus keys, please handle it to developer or manager of Binance Chain Team after every thing is done.
-- The last line of the command outputs, it will aks you to transfer 752100 BNB to an address, notice the address `bnb1vyrxpt7v259zwqcgvyy4vulfvz3655dxw2fr4j` of this doc is just an example, please do not transfer any BNB to `bnb1vyrxpt7v259zwqcgvyy4vulfvz3655dxw2fr4j`. Let us name this address as `validatorAccount`. 
+- `Relayer-Secret.json` contains the relayer private key for bsc-relayer, please back it up too and handle it to manager of Binance Chain team after every thing is done.
 
 ### 3. Transfer BNB
 
--  Transfer 752100 BNB to the address `validatorAccount`. You can transfer in anyway you like.
--  Transfer 1500 BNB to peg account(bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj).
-
+Please follow exactly the outputs of step3, exactly amount and address. 
+** NOTICE: Do not transfer twice or miss any transfer. 
 
 ### 4. Create Validator
+
+In this step, you need confirm on Ledger for 21 times, so watch your ledger carefully. 
 
 ```
 ./bscSetUp createVal tcp://dataseed4.binance.org:80
 ```
 
 The output should like:
-```
-send to bnb1a68gvl8zz8ccwjdr5ygz4qpqcuhwytlvgxd3x8 , txHash 85648A21277CF20E78F77424E07D266243D8A2CFE45AAED17DE9D274D09CD889 
-send to bnb13k2jahqw48tgjankf05pggk9k38glt04jhzrce , txHash 399F8C4933F0EF4A50AC8880E5DAA90A2DC4FEFE28570F5B8620D1BFC505EBA2 
-send to bnb1zw6wlp6hckhx4xesn3pz4m79x7rvhgzc9puvs8 , txHash CC7773D56181F6B02BD868C3B0D18E9382BA31EB036222E3B6F901F5D64CAD45 
-send to bnb1p77rx80fjjq5gp07fy40vsx50mg2c88t69zqmk , txHash 644B01C0F28C2E87DDD8AA828A6D3E1C51EE57451A32B8F3CCCF7B1DA21C2DB1 
-send to bnb1hk4y34u4v054w9e3fzel55jvqpp23qal6cz5rd , txHash 331A4E08609EE3928F52EA75918BDD7661646B8D5BFE0A2E53968D9A2BD7723D 
-send to bnb16w2ykppv2uedjdvx8234cc2fkje4lrvtjq8awy , txHash 989BF8FA8B7656FA1F95A0B3D7F517AB3668FCA78EAF27FBCDDB2DED456526A2 
-send to bnb1stt2xgfj3wvgpzpfd2m4vsh775c796kzlruyj2 , txHash FAC8BF53FAE41EF0DC72377662AD88253756C7D14DC3204A772D289EA3BF54CC 
-send to bnb15yhtwdlvj9pnng3a9ancr9qur2q5h8fltllauu , txHash AF43B22EA3B488697387FAD42A3FBD2D5B46790367676553055ED9F6D2E3CB5A 
-send to bnb1gg6vlwpwfuhm7xtgdsjcy59ykv5smt5e98gmwk , txHash 2BFAD1BF35277587061B64391546F180ABEAC573190A9768E43EF7668F0B762E 
-send to bnb1f2hyl65xwh0g0lce60wlnzmlaascj50acpzmu8 , txHash F9B3F33891DF26804AC1140640301072E93E96A657BC1B2664F1F248F147B403 
-send to bnb1t5pwagqxlxqjld3dr4ctzagjaa9gtn880jgcjq , txHash 93C79597B34F418EEFBBA6C181C38A694BC8EA91AC6AC7A95279359990CE10A6 
-send to bnb1yn6mzpzpl30sjrl3fmlkjm652uwtny5gjwkqmz , txHash 91645781E1D0960570984EC83E303379C123F9EBDC3B4C4E26408FDF0A944F4E 
-send to bnb1kxdv643varn2kxz4y4fe9n47rkaxk5l0neh4nl , txHash 245C8EC43FDF11168B7587BD9B0CA7AD322EA28408BA82FF6195DA33B05B40D4 
-send to bnb18d2aa2hy4ap9pcs4sk8859zn6cl0s9jv7upc05 , txHash BFE90D26C192955D7D39232DAF27ABEB157488EFC35910262659B377AF94C3B7 
-send to bnb1wmpg4jp6z3sluemyudm6ljn0hwzz4ql3lpuh76 , txHash 62A115A4FEB91EBF9019782A165421D4F4D282BA617CF3E9B4E9BD8DA5AADF74 
-send to bnb1xzv2dmuxmqajuc6avxmafer6xtjj7kuswx32ze , txHash 305DAB90D60089AE48AEED59D090AB0FC3C470B851FC8D90EAA38C7A5B9C3597 
-send to bnb1j2udqe0xxc9z94ensge5zmamug5lfn5m0wqnm9 , txHash 814B99CF3FF2F8A1ECF24331B430308BA7B26B92D50D4935373C5D9200EFEF7D 
-send to bnb16hcyr4dzhwm6eqz05305ch3nmz8739t3wmp496 , txHash 7AA378807C9A0FAFAF6F57852F78912BF74DF2649961571A38241D3712CCF16F 
-send to bnb1wg69qncsxh4nyrms2zadw3tzw7gamdyqv7hgsz , txHash FF1FE825BF4E1AA694C5354F01DAC9AB3D516623E31028A75080290445AB088F 
-send to bnb10dgua0tfjktj9lnvhgs60clw77skewg5y5nzrh , txHash 37EBE282D1C594575BE06E892761ED047387ABE93BE757AE1026B10B71B83394 
-finish token distribution
-create validaror Fuji , txHash 5035692F790256F3F20972F6D0D1B7123364194D386F5C5738CCDE4FDFF33BFB 
-create validaror Kita , txHash 2C653EB44FB73C12A601E53AB81508A8EF05FC62987C51ABBFCBA3816E88E6A9 
-create validaror Everest , txHash 5F9FBDB3B9EDDD3B0D2E60D0B936736F1FD981F4349E6C12BF87D2ABB83D9749 
-create validaror Seoraksan , txHash C7083ADB8635F427EB6AD4FAC96786EB880BE20320D9A4FA80C2B62DA225891B 
-create validaror Elbrus , txHash 0B13B115BD54436DF94C14251D75B4D18C0CA545023628BF701BC48AD6EBE977 
-create validaror Ararat , txHash 4CAD71504FF9CD5E2DA62305120782FACD8DE296E53DA172434946203C5F4548 
-create validaror Carrauntoohil , txHash D3C036FCC9451CF9CB06B01F4EC797926AE6C5B34F70CD7AC253AB631271698E 
-create validaror Scafell , txHash 46A05E0C43E132E2B12B75E168C23B2A8E278CA532E48E71127E8BE402A973F2 
-create validaror Aconcagua , txHash ED0D7BB5737207C07AC61FBA75BCB770D5E49FDE57BD968245C426A7389F9DFE 
-create validaror Zugspitze , txHash 6ED65E563B186E9EEBAE8802BD910B00237B8118ED936791939F326B6DA0335A 
-create validaror Gahinga , txHash D85FB8F21AA8B6D38B306747FC8BD8745E282BAE561BE5BA9AE7ABBFDFF2CF95 
-create validaror Castle , txHash FED8FBFBE1D5D26D81E8C0E7AE009496945E03DE93EB4C9274B7BF6802E432F7 
-create validaror Nanga , txHash 8E27104B8B953EF89BAB807AB5EF463B547AE08F553669DD0D3BF0E391F8B15F 
-create validaror Denali , txHash AF0A0F39DF6D092C0DE388DBB23AC13D18E623D0C8AB130F8AAC2E39E6F96793 
-create validaror Vinicunca , txHash 235E3B35A4C742FC0E11591A38E86A4D7C91ADD41DF140EB2D68E5967959378C 
-create validaror Kirkjufell , txHash A4C746B56CAFB54A8672D05F8C366F61C823419CE872DEBF70001BB31B962AE2 
-create validaror Bogda , txHash B2C603631830AF1DE72A92BE953815E81ACB815C8DA05FDA235712D044FC4EAB 
-create validaror Himalayas , txHash 7DF8C64400656DD6B610C042033F51B4BA6CD3332C55DB9F5F8D718C6AB896B3 
-create validaror Swiss , txHash 497BB28DB8819053CBED8763A490A0BB06A1A65E566465B479A895D1CC0C4985 
-create validaror Dolomites , txHash F7AFB2A99EF82AF05771C95F7CB05A3003017C6947F9F1260A1EB46A33FC5008 
-create validaror Logan , txHash EA4E527B36A9AFDF8534632F94F43BB9463ED7D4EAE38EE58AB4CBDA2F1E5511 
+send to bnb1w798mayd9t40d9tw8fwlmmn3z5wum22egvp7ew , txHash 637E9DCB3CA4453DAF73785F4C44A762AEBC0700ED012DA828A18C36B4D3C135 
+send to bnb1x59944se7crqxy8yyy4set857f5767tvz27ywz , txHash BFA8FA8A587F2C735CDF4D05711A0FDF5C7C2AE7EBC598EC35979A8C54E1BEC1 
+send to bnb10lhu04rd9nuak9cpmhqqhyxg3zfq5phfu97dwm , txHash 8BD70D647B56C97F8806440DBA84C2FF3A123B7D95E02624F5C3C2DF1600416D 
+send to bnb14a4ppa02ee40yvtlf46xdy0qvdpffqma2j69p8 , txHash A26C1405706FBFCEB139005118DA680CF44B36FB1B70907C71D5318FD16C7D6F 
+send to bnb1rxc40exgqfuf4qkjrjeg4epc7jwehvr4srw2x3 , txHash FDCB296BEDEE0954E9585843BE28B0EC361F14BC777EFB46783FFDA621DB8BE9 
+send to bnb1t0ggjckfycjqpegla9gg3myzk90lyefqw4z4hy , txHash 73ED77F554CD2470F418A04FA95CC21C7178E62D674DE1FA1A53158C9400E226 
+send to bnb1a7gt6druufgm66hqn774tvk5cqxtdzapvx2vnv , txHash D096EEF297FEA06BE3129D170451ACC96322742F412FBAC4CED43D625EDA4F05 
+send to bnb1d5t7wzre9h7qf3ffeqhteg4wuqzp9rzyphstkr , txHash E40F1790A99F6D8673C57C4A148EF09152B4924DB9C6F0500197F5E1DF16F034 
+send to bnb1zjp6f97wxxg29x6q7ag9p450cctv8here0aw8k , txHash 34E6D9F482FF8A0968239870A1F562AFF3CC619922384A4EFA43CA365654757A 
+send to bnb1n6z72lulxgx3cznhegwj50jkz9m2pr4jasue5t , txHash BC125021ABF937DDF46CFC877B2F25B29270B2D4224D6A34DA3BE61C968C0F69 
+send to bnb1kpmpmjrr3cf706x7glalw25yxj95jvenmfjp6s , txHash B088E21E5A5EA161C51A4464044E33D3A493EA25207F71FD37C74DE4E962DB04 
+send to bnb1lua98uv2fshpz6tndy740l34vah2tj64ljsacz , txHash 6FD935B0578B4FC5C51050497F7BD93BAA9F22CFE49399135148071332DFFC1B 
+send to bnb1w90scq4z89dvgkjw8ejxclcqy7vttuw2j4zgy7 , txHash 1FEF507A38553A346847FC6A6C01796945161E72D497297C1CC7B13F4CD01086 
+send to bnb1s0pvcvs946gh5p0s6wvy0g6kluhj2dmew73qva , txHash F759E0E34AFE58EA7B985AFE3020B0975BA08DC829A66F04A0F599F9ECF78871 
+send to bnb1wgwl0t4p9r6mq3cl2vure0m8685a3c7hmc7ave , txHash AE48AA733A7787053904930440719C3C516331F47C66EF7344C138E049AA2411 
+send to bnb1mztz7nncg3u2df8n69q2cn55m5rfj995jd66c8 , txHash D511251A7D6362CC13C58AC17FA9EC9847E06919F337D04D8C9CEB63E1099039 
+send to bnb1s20cxjcxd0hypq0elmhhcqpkzrjksrtfr8fp0e , txHash 4726B16F390BA408D4F6130949DD41C4E9E73E5856968EE7A8386F4708B78287 
+send to bnb10fwq55a0694ely5kxjpskn32mu0h890wgxplcw , txHash 0B94AF3EC2518ED103B448AFB2E0EA5C238B5CCAC8294FCE462C4B54F7F6B094 
+send to bnb1gm4cy0ke2pt9eyw76ykvvtkmx9qn7nlnvv880s , txHash B743EAB6744295DFE62997352261720E3327A171D87B3737AE6C6722A4BD4DF6 
+send to bnb1nuysxf93te2w8fup0se6clvy2l6p3klxuuhrwn , txHash 1CDE9127D6E8233DEAD998C03274B25DE10D717D49B6D830944400C22F3928FF 
+create validaror sigm8 , txHash 20784B6276C5DC33E0AA4775C5AE2AD986D61B90C42E8044C9E66BFBB6A1E20F 
+create validaror namelix , txHash 9E005262D21EFE0AD4B77F8814C635EF253080E859EC66DA0A5C82D51ED660AF 
+create validaror pexmons , txHash 8AEE810951065CD7CC54DAE68481C8EC86915D3E0C589B457324F8790127662C 
+...
+... 
+create validaror deshift , txHash 98B4898628CC6BF3513B5F89D49F9D0C656A6FC1DC2B55BC0FA0B894C3315193 
 finish create validator
 ```
 
-### 5. Backup and Notice
+During the time, confirm each createValidator transaction on the ledger, try to not interrupt the process. 
+
+### 5. Recreate Validators
+
+If you unfortunately interrupt the process of step4, just run and ignore error:
+
+```
+./bscSetUp createVal tcp://dataseed4.binance.org:80 skip
+``` 
+
+### 6. Backup and Notice
 
 - Make sure you back up `Validators-Secret.json` and keep it safe. Share a copy with manager of Binance Chain Team if possible, Binance Chain team may need use it to governance.
 - Please handle `Consensus-Secret.json` to developer or manager of Binance Chain Team.

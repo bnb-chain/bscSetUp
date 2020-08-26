@@ -6,12 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/binance-chain/go-sdk/client/transaction"
 	"io/ioutil"
 	"os"
 	"time"
 
 	"github.com/binance-chain/go-sdk/client/rpc"
-	"github.com/binance-chain/go-sdk/client/transaction"
 	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types/msg"
@@ -22,14 +22,15 @@ import (
 
 const numValidators = 21
 
-var monikers = []string{"Fuji", "Kita", "Everest", "Seoraksan", "Elbrus", "Ararat", "Carrauntoohil", "Scafell", "Aconcagua", "Zugspitze",
-	"Gahinga", "Castle", "Nanga", "Denali", "Vinicunca", "Kirkjufell", "Bogda", "Himalayas", "Swiss", "Dolomites", "Logan"}
+var monikers = []string{"sigm8", "namelix", "pexmons", "nariox", "tiollo", "raptas", "nozti", "coinlix", "raptoken", "glorin",
+	"bnb714", "defibit", "leapbnb", "ciscox", "moonmarket", "fivepenny", "stakepulse", "piececoin", "swappy", "satoshilab", "deshift"}
 
 type VAlAccount struct {
 	// BC
-	Mnemonic        string `json:"mnemonic"`
-	OperatorAddress string `json:"operator_address"`
-	Moniker         string `json:"moniker"`
+	OperatorMnemonic string `json:"operator_mnemonic"`
+	OperatorAddress  string `json:"operator_address"`
+	DelegatorAddress string `json:"delegator_address"`
+	Moniker          string `json:"moniker"`
 
 	// BSC
 	ConsensusPrivateKey string `json:"consensus_private_key"`
@@ -44,14 +45,20 @@ type ConsensusAccount struct {
 	ConsensusAddress    string `json:"consensus_address"`
 }
 
+type RelayerAccount struct {
+	RelayerPrivateKey string `json:"relayer_private_key"`
+	RelayerAddress    string `json:"relayer_address"`
+}
+
 type ExtAcc struct {
 	key  *ecdsa.PrivateKey
 	addr common.Address
 }
 
-func generateBCAccounts() string {
+func generateBCAccounts() {
 	klist := make([]VAlAccount, 0, numValidators)
 	clist := make([]ConsensusAccount, 0, numValidators)
+
 	for i := 0; i < numValidators; i++ {
 		k, err := keys.NewKeyManager()
 		if err != nil {
@@ -78,9 +85,19 @@ func generateBCAccounts() string {
 		if err != nil {
 			panic(err)
 		}
+
+		if err != nil {
+			panic(fmt.Sprintf("Failed to find ledger device: %s \n", err.Error()))
+		}
+		bip44Params := keys.NewBinanceBIP44Params(0, uint32(i))
+		keyManager, err := keys.NewLedgerKeyManager(bip44Params.DerivationPath())
+		if err != nil {
+			panic(fmt.Sprintf("failed to find hd address %s , index %d\n", err.Error(), i))
+		}
 		klist = append(klist, VAlAccount{
 			m,
 			k.GetAddr().String(),
+			keyManager.GetAddr().String(),
 			monikers[i],
 			h1,
 			h2,
@@ -92,6 +109,10 @@ func generateBCAccounts() string {
 			h1,
 			c.addr.String(),
 		})
+		err = keyManager.Close()
+		if err != nil {
+			panic(fmt.Sprintf("failed to close ledger %v", err))
+		}
 	}
 	bz, err := json.MarshalIndent(klist, "", "\t")
 	if err != nil {
@@ -112,10 +133,42 @@ func generateBCAccounts() string {
 	if err != nil {
 		panic(err)
 	}
-	return klist[0].OperatorAddress
+
+	rAccounts := make([]RelayerAccount, 0)
+	for i := 0; i < 2; i++ {
+		raccountHex, err := randHexKey()
+		if err != nil {
+			panic(err)
+		}
+		raccount, err := newExtAcc(raccountHex)
+		if err != nil {
+			panic(err)
+		}
+		rAccounts = append(rAccounts, RelayerAccount{
+			raccountHex,
+			raccount.addr.String(),
+		})
+	}
+
+	err = ioutil.WriteFile("Relayer-Secret.json", bz, 0666)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("do transfer exact   1   BNB to %s which is the operator account of first validator, it will create other operator accounts \n", klist[0].OperatorAddress)
+
+	for i := 0; i < numValidators; i++ {
+		amount := int64(50020)
+		if i >= 11 {
+			amount = 20020
+		}
+		fmt.Printf("do transfer exact %d BNB to %s which is the index %d of your fisrt account of ledger \n", amount, klist[i].DelegatorAddress, i)
+	}
+	fmt.Printf("do transfer exact 1000 BNB to bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj which is the peggy account \n")
+	return
 }
 
-func createValidators(client *rpc.HTTP, skipDistribute bool) {
+func createValidators(client *rpc.HTTP, skip bool) {
 	bz, err := ioutil.ReadFile("Validators-Secret.json")
 	if err != nil {
 		panic(err)
@@ -128,73 +181,19 @@ func createValidators(client *rpc.HTTP, skipDistribute bool) {
 	if len(klist) != numValidators {
 		panic("the item in Validators-Secret.json is not 21 ")
 	}
-	initHolder := klist[0].OperatorAddress
-	addr, err := types.AccAddressFromBech32(initHolder)
+
+	// create operate account
+	opkey, err := keys.NewMnemonicKeyManager(klist[0].OperatorMnemonic)
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("Get first opkey fail %v\n", err))
 	}
-
-	if !skipDistribute {
-		b, err := client.GetBalance(addr, "BNB")
+	client.SetKeyManager(opkey)
+	for i := 1; i < numValidators; i++ {
+		to, err := types.AccAddressFromBech32(klist[i].OperatorAddress)
 		if err != nil {
 			panic(err)
 		}
-		if b.Free.Value() < 752100 {
-			panic("the first account do not receive enough balance")
-		}
-		k, err := keys.NewMnemonicKeyManager(klist[0].Mnemonic)
-		if err != nil {
-			panic(err)
-		}
-		client.SetKeyManager(k)
-		for i := 1; i < numValidators; i++ {
-			to, err := types.AccAddressFromBech32(klist[i].OperatorAddress)
-			if err != nil {
-				panic(err)
-			}
-			amount := int64(5010000000000)
-			if i >= 11 {
-				amount = 2010000000000
-			}
-			res, err := client.SendToken([]msg.Transfer{{to, []types.Coin{{"BNB", amount}}}}, rpc.Commit, transaction.WithMemo(""))
-			if err != nil {
-				panic(err)
-			}
-			if res.Code != 0 {
-				fmt.Println(res.Log)
-				os.Exit(1)
-			}
-			fmt.Printf("send to %s , txHash %s \n", to.String(), res.Hash.String())
-			time.Sleep(1 * time.Second)
-		}
-
-		fmt.Println("finish token distribution")
-	}
-
-	for i := 0; i < numValidators; i++ {
-		k, err := keys.NewMnemonicKeyManager(klist[i].Mnemonic)
-		if err != nil {
-			panic(err)
-		}
-		client.SetKeyManager(k)
-		amount := types.Coin{Denom: "BNB", Amount: 5000000000000}
-		if i >= 11 {
-			amount = types.Coin{Denom: "BNB", Amount: 2000000000000}
-		}
-
-		des := msg.Description{Moniker: klist[i].Moniker, Details: fmt.Sprintf("The is %s org on BSC network", klist[i].Moniker), Website: "will coming soon"}
-
-		rate, _ := types.NewDecFromStr("25000000")
-		maxRate, _ := types.NewDecFromStr("90000000")
-		maxChangeRate, _ := types.NewDecFromStr("3000000")
-
-		commissionMsg := types.CommissionMsg{Rate: rate, MaxRate: maxRate, MaxChangeRate: maxChangeRate}
-
-		sideChainId := "bsc"
-		sideConsAddr := fromHex(klist[i].ConsensusAddress)
-		sideFeeAddr := fromHex(klist[i].FeeAddress)
-
-		res, err := client.CreateSideChainValidator(amount, des, commissionMsg, sideChainId, sideConsAddr, sideFeeAddr, rpc.Commit)
+		res, err := client.SendToken([]msg.Transfer{{to, []types.Coin{{"BNB", 100000}}}}, rpc.Commit, transaction.WithMemo(""))
 		if err != nil {
 			panic(err)
 		}
@@ -202,7 +201,80 @@ func createValidators(client *rpc.HTTP, skipDistribute bool) {
 			fmt.Println(res.Log)
 			os.Exit(1)
 		}
-		fmt.Printf("create validaror %s , txHash %s \n", klist[i].Moniker, res.Hash.String())
+		fmt.Printf("send to %s , txHash %s \n", to.String(), res.Hash.String())
+		time.Sleep(1 * time.Second)
+	}
+
+	if !skip {
+		for i := 0; i < numValidators; i++ {
+			del, err := types.AccAddressFromBech32(klist[i].DelegatorAddress)
+			if err != nil {
+				panic(err)
+			}
+			amount := int64(50020)
+			if i >= 11 {
+				amount = 20020
+			}
+			b, err := client.GetBalance(del, "BNB")
+			if err != nil {
+				panic(err)
+			}
+			if b.Free.Value() < amount {
+				panic(fmt.Sprintf("the account %s do not receive enough balance %d", klist[i].DelegatorAddress, b.Free.Value()))
+			}
+		}
+	}
+
+	for i := 0; i < numValidators; i++ {
+		amount := types.Coin{Denom: "BNB", Amount: 5000000000000}
+		if i >= 11 {
+			amount = types.Coin{Denom: "BNB", Amount: 2000000000000}
+		}
+
+		des := msg.Description{Moniker: klist[i].Moniker, Details: fmt.Sprintf("The is %s org on BSC network", klist[i].Moniker), Website: ""}
+
+		rate, _ := types.NewDecFromStr("25000000")
+		maxRate, _ := types.NewDecFromStr("90000000")
+		maxChangeRate, _ := types.NewDecFromStr("80000000")
+
+		commissionMsg := types.CommissionMsg{Rate: rate, MaxRate: maxRate, MaxChangeRate: maxChangeRate}
+
+		sideChainId := "bsc"
+		sideConsAddr := fromHex(klist[i].ConsensusAddress)
+		sideFeeAddr := fromHex(klist[i].FeeAddress)
+
+		bip44Params := keys.NewBinanceBIP44Params(0, uint32(i))
+		if err != nil {
+			panic(fmt.Sprintf("failed to find hd address %s , index %d\n", err.Error(), i))
+		}
+
+		keyManager, err := keys.NewDoubleKey(klist[i].OperatorMnemonic, bip44Params.DerivationPath())
+		if err != nil {
+			panic(fmt.Sprintf("failed to find hd address %s , index %d\n", err.Error(), i))
+		}
+
+		client.SetKeyManager(keyManager)
+
+		opAcc, err := types.AccAddressFromBech32(klist[i].OperatorAddress)
+		if err != nil {
+			panic(fmt.Sprintf("failed to decode OperatorAddress %s , index %d\n", err.Error(), i))
+		}
+
+		res, err := client.CreateSideChainValidatorV2(types.ValAddress(opAcc), amount, des, commissionMsg, sideChainId, sideConsAddr, sideFeeAddr, rpc.Commit)
+		if err != nil {
+			panic(err)
+		}
+
+		if res.Code != 0 {
+			fmt.Printf("Failed to create validaror %s , txHash %s \n", klist[i].Moniker, res.Hash.String())
+			fmt.Println(res.Log)
+			if !skip {
+				os.Exit(1)
+			}
+		} else {
+			fmt.Printf("create validaror %s , txHash %s \n", klist[i].Moniker, res.Hash.String())
+		}
+		keyManager.Close()
 		time.Sleep(1 * time.Second)
 	}
 	fmt.Println("finish create validator")
@@ -267,23 +339,25 @@ func main() {
 	action := args[1]
 	switch action {
 	case "init":
-		receiveAddress := generateBCAccounts()
 		fmt.Println("Validators-Secret.json is generated. It contains all the private key for all 21 validators, Please do backup this file and keep it safe, but do not remove or rename this before everything is done")
-		fmt.Println("Consensus-Secret.json is generated. It contains the consensus private key needed for running BSC validator, please back it up too and handle it to developer.")
-		fmt.Printf("Now please do transfer exact 752100 BNB to %s, the address is the field 'operator_address' of the first item in file Validators-Secret.json, pleased do double check. After that we can continue to create validators. \n", receiveAddress)
+		fmt.Println("Consensus-Secret.json is generated. It contains the consensus private key needed for running BSC validator, please back it up too and handle it to manager of Binance Chain team.")
+		fmt.Println("Relayer-Secret.json is generated. It contains the relayer private key for bsc-relayer, please back it up too and handle it to manager of Binance Chain team.")
+
+		generateBCAccounts()
+
 	case "createVal":
 		if len(args) < 3 {
 			fmt.Println("remote node address is needed")
 			os.Exit(1)
 		}
 		nodeAddr := args[2]
-		skipDis := false
-		if len(args) >= 4 && args[3] == "--skipDis" {
-			skipDis = true
+		skip := false
+		if len(args) >= 4 && args[3] == "skip" {
+			skip = true
 		}
 		clientInstance := rpc.NewRPCClient(nodeAddr, types.ProdNetwork)
 		clientInstance.SetTimeOut(6 * time.Second)
-		createValidators(clientInstance, skipDis)
+		createValidators(clientInstance, skip)
 	}
 
 }
