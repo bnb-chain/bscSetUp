@@ -23,7 +23,7 @@ import (
 const numValidators = 21
 
 var monikers = []string{"sigm8", "namelix", "pexmons", "nariox", "tiollo", "raptas", "nozti", "coinlix", "raptoken", "glorin",
-	"bnb714", "defibit", "leapbnb", "ciscox", "moonmarket", "fivepenny", "stakepulse", "piececoin", "swappy", "satoshilab", "deshift"}
+	"Seoraksan", "defibit", "leapbnb", "ciscox", "Everest", "Ararat", "stakepulse", "piececoin", "Kita", "fuji", "Aconcagua"}
 
 type VAlAccount struct {
 	// BC
@@ -31,15 +31,16 @@ type VAlAccount struct {
 	OperatorAddress  string `json:"operator_address"`
 	DelegatorAddress string `json:"delegator_address"`
 	Moniker          string `json:"moniker"`
-
-	// BSC
-	ConsensusPrivateKey string `json:"consensus_private_key"`
-	FeePrivateKey       string `json:"fee_private_key"`
-	ConsensusAddress    string `json:"consensus_address"`
-	FeeAddress          string `json:"fee_address"`
 }
 
-type ConsensusAccount struct {
+type BSCFeeAccount struct {
+	Moniker string `json:"moniker"`
+	// BSC
+	FeePrivateKey string `json:"fee_private_key"`
+	FeeAddress    string `json:"fee_address"`
+}
+
+type BSCConsensusAccount struct {
 	Moniker             string `json:"moniker"`
 	ConsensusPrivateKey string `json:"consensus_private_key"`
 	ConsensusAddress    string `json:"consensus_address"`
@@ -50,6 +51,17 @@ type RelayerAccount struct {
 	RelayerAddress    string `json:"relayer_address"`
 }
 
+type NonSensitiveInfo struct {
+	RelayerAddr []string     `json:"relayer_addr"`
+	BSCAccounts []BSCAccount `json:"bsc_accounts"`
+}
+
+type BSCAccount struct {
+	Moniker          string `json:"moniker"`
+	FeeAddress       string `json:"fee_address"`
+	ConsensusAddress string `json:"consensus_address"`
+}
+
 type ExtAcc struct {
 	key  *ecdsa.PrivateKey
 	addr common.Address
@@ -57,7 +69,9 @@ type ExtAcc struct {
 
 func generateBCAccounts() {
 	klist := make([]VAlAccount, 0, numValidators)
-	clist := make([]ConsensusAccount, 0, numValidators)
+	clist := make([]BSCConsensusAccount, 0, numValidators)
+	flist := make([]BSCFeeAccount, 0, numValidators)
+	nlist := make([]BSCAccount, 0, numValidators)
 
 	for i := 0; i < numValidators; i++ {
 		k, err := keys.NewKeyManager()
@@ -99,14 +113,20 @@ func generateBCAccounts() {
 			k.GetAddr().String(),
 			keyManager.GetAddr().String(),
 			monikers[i],
-			h1,
+		})
+		flist = append(flist, BSCFeeAccount{
+			monikers[i],
 			h2,
-			c.addr.String(),
 			f.addr.String(),
 		})
-		clist = append(clist, ConsensusAccount{
+		clist = append(clist, BSCConsensusAccount{
 			monikers[i],
 			h1,
+			c.addr.String(),
+		})
+		nlist = append(nlist, BSCAccount{
+			monikers[i],
+			f.addr.String(),
 			c.addr.String(),
 		})
 		err = keyManager.Close()
@@ -119,7 +139,7 @@ func generateBCAccounts() {
 		panic(err)
 	}
 
-	err = ioutil.WriteFile("Validators-Secret.json", bz, 0666)
+	err = ioutil.WriteFile("Operator-Secret.json", bz, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -129,7 +149,7 @@ func generateBCAccounts() {
 		panic(err)
 	}
 
-	err = ioutil.WriteFile("Consensus-Secret.json", bz, 0666)
+	err = ioutil.WriteFile("BSCConsensus-Secret.json", bz, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -149,8 +169,34 @@ func generateBCAccounts() {
 			raccount.addr.String(),
 		})
 	}
-
+	bz, err = json.MarshalIndent(rAccounts, "", "\t")
+	if err != nil {
+		panic(err)
+	}
 	err = ioutil.WriteFile("Relayer-Secret.json", bz, 0666)
+	if err != nil {
+		panic(err)
+	}
+
+	bz, err = json.MarshalIndent(flist, "", "\t")
+	if err != nil {
+		panic(err)
+	}
+
+	err = ioutil.WriteFile("BSCFee-Secret.json", bz, 0666)
+	if err != nil {
+		panic(err)
+	}
+	nonSensitiveInfo := NonSensitiveInfo{
+		BSCAccounts: nlist,
+		RelayerAddr: []string{rAccounts[0].RelayerAddress, rAccounts[1].RelayerAddress},
+	}
+	bz, err = json.MarshalIndent(nonSensitiveInfo, "", "\t")
+	if err != nil {
+		panic(err)
+	}
+
+	err = ioutil.WriteFile("NonSensitive-Info.json", bz, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -162,14 +208,14 @@ func generateBCAccounts() {
 		if i >= 11 {
 			amount = 20020
 		}
-		fmt.Printf("do transfer exact %d BNB to %s which is the index %d of your fisrt account of ledger \n", amount, klist[i].DelegatorAddress, i)
+		fmt.Printf("do transfer exact %d BNB to %s which is validator %s, index %d of your fisrt account of ledger \n", amount, klist[i].DelegatorAddress, klist[i].Moniker, i)
 	}
 	fmt.Printf("do transfer exact 1000 BNB to bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj which is the peggy account \n")
 	return
 }
 
 func createValidators(client *rpc.HTTP, skip bool) {
-	bz, err := ioutil.ReadFile("Validators-Secret.json")
+	bz, err := ioutil.ReadFile("Operator-Secret.json")
 	if err != nil {
 		panic(err)
 	}
@@ -179,7 +225,20 @@ func createValidators(client *rpc.HTTP, skip bool) {
 		panic(err)
 	}
 	if len(klist) != numValidators {
-		panic("the item in Validators-Secret.json is not 21 ")
+		panic("the item in Operator-Secret.json is not 21 ")
+	}
+
+	newBz, err := ioutil.ReadFile("NonSensitive-Info.json")
+	if err != nil {
+		panic(err)
+	}
+	nlist := NonSensitiveInfo{}
+	err = json.Unmarshal(newBz, &nlist)
+	if err != nil {
+		panic(err)
+	}
+	if len(nlist.BSCAccounts) != numValidators {
+		panic("the item in NonSensitive-Info.json is not 21 ")
 	}
 
 	// create operate account
@@ -240,8 +299,8 @@ func createValidators(client *rpc.HTTP, skip bool) {
 		commissionMsg := types.CommissionMsg{Rate: rate, MaxRate: maxRate, MaxChangeRate: maxChangeRate}
 
 		sideChainId := "bsc"
-		sideConsAddr := fromHex(klist[i].ConsensusAddress)
-		sideFeeAddr := fromHex(klist[i].FeeAddress)
+		sideConsAddr := fromHex(nlist.BSCAccounts[i].ConsensusAddress)
+		sideFeeAddr := fromHex(nlist.BSCAccounts[i].FeeAddress)
 
 		bip44Params := keys.NewBinanceBIP44Params(0, uint32(i))
 		if err != nil {
@@ -339,10 +398,11 @@ func main() {
 	action := args[1]
 	switch action {
 	case "init":
-		fmt.Println("Validators-Secret.json is generated. It contains all the private key for all 21 validators, Please do backup this file and keep it safe, but do not remove or rename this before everything is done")
-		fmt.Println("Consensus-Secret.json is generated. It contains the consensus private key needed for running BSC validator, please back it up too and handle it to manager of Binance Chain team.")
-		fmt.Println("Relayer-Secret.json is generated. It contains the relayer private key for bsc-relayer, please back it up too and handle it to manager of Binance Chain team.")
-
+		fmt.Println("Operator-Secret.json will be generated. It contains all the private key of operator for all 21 validators.")
+		fmt.Println("BSCConsensus-Secret.json.json will be generated. It contains the consensus private key needed for running BSC validator.")
+		fmt.Println("Relayer-Secret.json will be generated. It contains the relayer private key for bsc-relayer.")
+		fmt.Println("BSCFee-Secret.json will be generated. It contains the private key of fee receiver on BSC.")
+		fmt.Println("NonSensitive-Info.json will be generated. It contains the fee address and consensus address of BSC validator, it is insensitive.")
 		generateBCAccounts()
 
 	case "createVal":
