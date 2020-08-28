@@ -2,16 +2,20 @@ package main
 
 import (
 	"crypto/ecdsa"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/binance-chain/go-sdk/client/transaction"
 	"io/ioutil"
 	"os"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/binance-chain/go-sdk/client/rpc"
+	"github.com/binance-chain/go-sdk/client/transaction"
 	"github.com/binance-chain/go-sdk/common/types"
 	"github.com/binance-chain/go-sdk/keys"
 	"github.com/binance-chain/go-sdk/types/msg"
@@ -389,6 +393,42 @@ func printUsage() {
 	fmt.Printf("usage: ./bscSetup [init, createVal] [--skipDis]...\n")
 }
 
+func GetSecret(secretName, region string) (string, error) {
+	//Create a Secrets Manager client
+	sess, err := session.NewSession(&aws.Config{
+		Region: &region,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	svc := secretsmanager.New(sess)
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId:     aws.String(secretName),
+		VersionStage: aws.String("AWSCURRENT"), // VersionStage defaults to AWSCURRENT if unspecified
+	}
+
+	result, err := svc.GetSecretValue(input)
+	if err != nil {
+		return "", err
+	}
+
+	var secretString, decodedBinarySecret string
+	if result.SecretString != nil {
+		secretString = *result.SecretString
+		return secretString, nil
+	} else {
+		decodedBinarySecretBytes := make([]byte, base64.StdEncoding.DecodedLen(len(result.SecretBinary)))
+		length, err := base64.StdEncoding.Decode(decodedBinarySecretBytes, result.SecretBinary)
+		if err != nil {
+			fmt.Println("Base64 Decode Error:", err)
+			return "", err
+		}
+		decodedBinarySecret = string(decodedBinarySecretBytes[:length])
+		return decodedBinarySecret, nil
+	}
+}
+
 func main() {
 	args := os.Args
 	if len(args) < 2 {
@@ -418,6 +458,63 @@ func main() {
 		clientInstance := rpc.NewRPCClient(nodeAddr, types.ProdNetwork)
 		clientInstance.SetTimeOut(6 * time.Second)
 		createValidators(clientInstance, skip)
+	case "getAddr":
+		if len(args) < 5 {
+			fmt.Println("secretName, region, account type is needed")
+			os.Exit(1)
+		}
+		secretName := args[2]
+		region := args[3]
+		accountType := args[4]
+		contend, err := GetSecret(secretName, region)
+		if err != nil {
+			fmt.Println("failed to get secret")
+			panic(err)
+		}
+		type AwsPrivateKey struct {
+			PrivateKey string `json:"private_key"`
+		}
+		var awsPrivateKey AwsPrivateKey
+		if accountType == "bc" || accountType == "bsc" {
+			err = json.Unmarshal([]byte(contend), &awsPrivateKey)
+			if err != nil {
+				fmt.Println("failed to unmarshal secret contend")
+				panic(err)
+			}
+			if accountType == "bc" {
+				k, err := keys.NewMnemonicKeyManager(awsPrivateKey.PrivateKey)
+				if err != nil {
+					fmt.Println("failed to get account address from private key")
+					panic(err)
+				} else {
+					fmt.Printf("Account address is %s \n", k.GetAddr().String())
+				}
+			} else if accountType == "bsc" {
+				acc, err := newExtAcc(awsPrivateKey.PrivateKey)
+				if err != nil {
+					fmt.Println("failed to get account address from private key")
+					panic(err)
+				} else {
+					fmt.Printf("Account address is %s \n", acc.addr.String())
+				}
+			}
+		} else {
+			flist := make([]BSCFeeAccount, 0, numValidators)
+			err := json.Unmarshal([]byte(contend), &flist)
+			if err != nil {
+				panic(err)
+			}
+			for i := 0; i < numValidators; i++ {
+				acc, err := newExtAcc(flist[i].FeePrivateKey)
+				if err != nil {
+					fmt.Println("failed to get account address from private key")
+					panic(err)
+				} else {
+					fmt.Printf("Account address is %s \n", acc.addr.String())
+				}
+			}
+		}
+
 	}
 
 }

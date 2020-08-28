@@ -166,6 +166,54 @@ If you unfortunately interrupt the process of step 6, just run and ignore error:
 - For `Operator-Secret.json`, there are 21 items of the file, please create a secret for each item. The key is "private_key", value is the "operator_mnemonic" field of each item, please name the secret as the `moniker` of each item. 
 - For `BSCConsensus-Secret.json`, please encrypt it and handle it to developer, they need it to run BSC validator. For example, you can use `zip -P mypassword BSCConsensus-Secret.zip BSCConsensus-Secret.json` to encrypt.
 - For `BSCFee-Secret.json`, please upload it to AWS secret-manager.
-- For `Relayer-Secret.json`, there are two item inside. Please first in region `ap-northeast-1`, create a secret, and add key `private_key`, value is the `relayer_private_key` field of the first item. Then switch to region `us-east-1` Virginia, create a secret too, and add key `private_key`, the value is the `relayer_private_key` field of the second item. 
+- For `Relayer-Secret.json`, there are two item inside. Please first in region `ap-northeast-1`, create a secret, and add key `private_key`, value is the `relayer_private_key` field of the first item. Then switch to region `eu-west-1`  Ireland , create a secret too, and add key `private_key`, the value is the `relayer_private_key` field of the second item. 
 - For `NonSensitive-Info.json`, please handle it to developer.
 - Please feedback the secret name on AWS of each file to the developer after everything is done.
+
+### 9. Secret Manager Double Check
+
+We need verify the secret uploaded to secret manager is correct.
+
+1. find a ec2 that can access all these secret on AWS.
+2. Get the linux version of `bscSetUp`.
+3. Execute following command to check each secret:
+```
+./bscSetUp getAddr {secretName} {region} {accountType}
+```
+example:
+```
+./bscSetUp getAddr dex-testnet-bsc-relayer-private-key-delete-me-fudong ap-northeast-1 bsc
+```
+
+
+For the secret of `Operator-Secret.json`,  
+```
+./bscSetUp getAddr {secretname} {region} bc
+```
+The output should be like:
+```
+Account address is bnb1vjmvhxat3whx965uhjk52dh9wl5aksc8uxxgez
+```
+The address should match `operator_address` of each item.
+
+For the secret of `Relayer-Secret.json`,
+```
+./bscSetUp getAddr {secretname} {region} bsc
+```
+The outputs should be like:
+```
+Account address is 0x8348E0448f7Cb4C6Bf745ccB429BAf498eD10Dc0
+```
+The address should match `relayer_address` of each item.
+
+For the secret of `BSCFee-Secret.json`, 
+```
+./bscSetUp getAddr {secretname} {region} bscfee 
+```
+The outputs should be like :
+```
+Account address is 0x8348E0448f7Cb4C6Bf745ccB429BAf498eD10Dc0
+Account address is 0x6Bf745ccB429BAf498eD10Dc08348E0448f7Cb4C
+...
+```
+The address should match `fee_address` of each item.
