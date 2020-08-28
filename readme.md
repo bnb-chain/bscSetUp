@@ -7,7 +7,7 @@
 
 ## Financial Preparation
 
-Prepare an Binance Chain account with at least 751421 BNBs.
+Prepare a Binance Chain account with at least 751421 BNBs.
 
 - 750420 BNB. We will setup 21 validators, 11 of them will delegate 50000 BNBs, 10 of them will delegate 20000 BNB. To cover the createValidator fee, we give each validator more 20 BNB.
 So 750420 = 50000 * 11 + 20000 * 10 + 20 * 21.
@@ -41,7 +41,6 @@ Connect your ledger to desktop and enter Binance Chain app, and you should see: 
 
 This step will generate all accounts and private keys that are needed, it will query info from ledger too, make sure ledger connected before executing following command.
 ```
-chmod +x bscSetUp
 ./bscSetUp init
 ```
 The output should be like:
@@ -81,7 +80,7 @@ After initialization, five files `Operator-Secret.json`, `BSCConsensus-Secret.js
 
 ### 4. Check Account
 
-The output of step2 will inform you to send BNB to some address, like the ones `do transfer exact xxx BNB to xxxxx which is validator xxx, index x of your fisrt account of ledger`, 
+The output of step3 will inform you to send BNB to some address, like the ones `do transfer exact xxx BNB to xxxxx which is validator xxx, index x of your fisrt account of ledger`, 
 Please check the each address on Ledger "Binance Chain App" ==> "Your addresses" ==> "Main net", make sure they are match.
 
 ### 5. Transfer BNB
@@ -99,7 +98,7 @@ Before executing the following command, make sure your ledger is "Binance App Re
 
 About 30 seconds after executing the following command, you need confirm transactions on ledger.
 
-NOTICE: ** During the time, confirm each createValidator transaction on the ledger, try to not interrupt the process. **
+NOTICE: **During the time, confirm each createValidator transaction on the ledger, try to not interrupt the process.**
 
 ```
 ./bscSetUp createVal tcp://dataseed4.binance.org:80
@@ -152,15 +151,15 @@ create validaror Aconcagua , txHash 357FEC9454B88CCAD2CCCBD2900699838F84AC45C13C
 finish create validator
 ```
 
-### 8. Recreate Validators
+### 7. Recreate Validators
 
-If you unfortunately interrupt the process of step4, just run and ignore error:
+If you unfortunately interrupt the process of step 6, just run and ignore error:
 
 ```
 ./bscSetUp createVal tcp://dataseed4.binance.org:80 skip
 ``` 
 
-### 9. Follow-Up 
+### 8. Follow-Up 
 
 - Back up the five generated files.
 - Log in `dex-prod` account on AWS, switch to region `ap-northeast-1` tokyo as default.
