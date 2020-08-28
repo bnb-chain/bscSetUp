@@ -21,26 +21,21 @@ We attach the built binary to the release, the binary is build on the source cod
 
 ## Preparation
 
-We need two mac desktops and one ledger, and one USB flash disk. 
+We need one mac desktop and one ledger, and one USB flash disk. 
 
-- Desktop A. One desktop is used for generate relative private key. For security consideration, the network should be isolated.
-- Desktop B. Another desktop is used to sign transaction and create validator on BC. The network should be connected so we can broadcast the transaction.
+- Desktop. The desktop is used to sign transaction and create validator on BC. The network should be connected so we can broadcast the transaction.
 - We will use the the first 21 accounts of account0 of Ledger as the fee address of validators. Binance Chain app should be installed on ledger.
 - We need an USB flash disk to transfer some generated files and the tool.
 
 ## Steps
 
 ### 1. Get the binary
-- Log in the Desktop B. 
 - `wget --no-check-certificate https://github.com/binance-chain/bscSetUp/releases/download/v1.0.0/bscSetUp`
 - `chmod +x bscSetUp`
-- copy the binary to your USB flash disk.
 
 ### 2. Connect to ledger
 
-- Log in the Desktop A and connect to your usb disk.
-- copy the binary to your workspace and open a terminal.
-- Connect your ledger to desktop and enter Binance Chain app, and you should see: `Binance Chain Ready` on the ledger app.
+Connect your ledger to desktop and enter Binance Chain app, and you should see: `Binance Chain Ready` on the ledger app.
 
 ### 3. Init Validator Accounts.
 
@@ -94,18 +89,17 @@ Please check the each address on Ledger "Binance Chain App" ==> "Your addresses"
 Please follow exactly the outputs of step3, exact amount and address, and do transfer in anyway you wish. 
 **NOTICE: Do not transfer twice or miss any transfer, do not ever repeat step3 after this step** 
 
-### 6. Go To Desktop B (Network connected)
-
-- copy `Operator-Secret.json` and `NonSensitive-Info.json` file to desktop B through USB flash disk, and put them at same directory/workspace with the binary `bscSetUp`. 
-- connect ledger to desktop B and open Binance Chain App.
-
-The following step is operated on desktop B.
-
-### 7. Create Validator
+### 6. Create Validator
 
 In this step, you will sign CreateValidator transactions and broadcast them. 
 
-You need confirm on Ledger for 21 times, so watch your ledger carefully. 
+You need confirm on Ledger for 21 times, so watch your ledger carefully.
+
+Before executing the following command, make sure your ledger is "Binance App Ready". 
+
+About 30 seconds after executing the following command, you need confirm transactions on ledger.
+
+NOTICE: ** During the time, confirm each createValidator transaction on the ledger, try to not interrupt the process. **
 
 ```
 ./bscSetUp createVal tcp://dataseed4.binance.org:80
@@ -157,8 +151,6 @@ create validaror fuji , txHash 2A55C78CFEC45EC240DE4B089B638D15D12D09998B7425BE6
 create validaror Aconcagua , txHash 357FEC9454B88CCAD2CCCBD2900699838F84AC45C13C1064908351DD355C8777 
 finish create validator
 ```
-
-During the time, confirm each createValidator transaction on the ledger, try to not interrupt the process. 
 
 ### 8. Recreate Validators
 
