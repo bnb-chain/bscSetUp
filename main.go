@@ -474,22 +474,31 @@ func main() {
 		type AwsPrivateKey struct {
 			PrivateKey string `json:"private_key"`
 		}
-		var awsPrivateKey AwsPrivateKey
 		if accountType == "bc" || accountType == "bsc" {
-			err = json.Unmarshal([]byte(contend), &awsPrivateKey)
-			if err != nil {
-				fmt.Println("failed to unmarshal secret contend")
-				panic(err)
-			}
 			if accountType == "bc" {
-				k, err := keys.NewMnemonicKeyManager(awsPrivateKey.PrivateKey)
+				ops := make([]VAlAccount, 0)
+				err = json.Unmarshal([]byte(contend), &ops)
 				if err != nil {
-					fmt.Println("failed to get account address from private key")
+					fmt.Println("failed to unmarshal secret contend")
 					panic(err)
-				} else {
-					fmt.Printf("Account address is %s \n", k.GetAddr().String())
 				}
+				for i := 0; i < numValidators; i++ {
+					k, err := keys.NewMnemonicKeyManager(ops[i].OperatorMnemonic)
+					if err != nil {
+						fmt.Println("failed to get account address from private key")
+						panic(err)
+					} else {
+						fmt.Printf("Account address is %s \n", k.GetAddr().String())
+					}
+				}
+
 			} else if accountType == "bsc" {
+				var awsPrivateKey AwsPrivateKey
+				err = json.Unmarshal([]byte(contend), &awsPrivateKey)
+				if err != nil {
+					fmt.Println("failed to unmarshal secret contend")
+					panic(err)
+				}
 				acc, err := newExtAcc(awsPrivateKey.PrivateKey)
 				if err != nil {
 					fmt.Println("failed to get account address from private key")
