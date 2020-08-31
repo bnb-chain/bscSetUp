@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -459,13 +460,18 @@ func main() {
 		clientInstance.SetTimeOut(6 * time.Second)
 		createValidators(clientInstance, skip)
 	case "vote":
-		if len(args) < 5 {
+		if len(args) < 6 {
 			fmt.Println("secretName, region, account type is needed")
 			os.Exit(1)
 		}
 		secretName := args[2]
 		region := args[3]
 		nodeAddr := args[4]
+		idxStr := args[5]
+		idx, err := strconv.Atoi(idxStr)
+		if err != nil {
+			panic(err)
+		}
 		contend, err := GetSecret(secretName, region)
 		if err != nil {
 			fmt.Println("failed to get secret")
@@ -479,29 +485,30 @@ func main() {
 		}
 		clientInstance := rpc.NewRPCClient(nodeAddr, types.ProdNetwork)
 		clientInstance.SetTimeOut(6 * time.Second)
-		for i := 0; i < 11; i++ {
-			k, err := keys.NewMnemonicKeyManager(ops[i].OperatorMnemonic)
-			if err != nil {
-				fmt.Println("failed to get account address from private key")
-				panic(err)
-			} else {
-				fmt.Printf("Account address is %s \n", k.GetAddr().String())
-			}
-			clientInstance.SetKeyManager(k)
-			res, err := clientInstance.SideChainVote(1, msg.OptionYes, "bsc", rpc.Commit)
-			if err != nil {
-				panic(err)
-			}
-
-			if res.Code != 0 {
-				fmt.Printf("Failed to vote %s , txHash %s \n", k.GetAddr().String())
-				fmt.Println(res.Log)
-				os.Exit(1)
-			} else {
-				fmt.Printf("vote success %s , txHash %s \n", k.GetAddr().String(), res.Hash.String())
-			}
-			time.Sleep(100 * time.Second)
+		k, err := keys.NewMnemonicKeyManager(ops[idx].OperatorMnemonic)
+		if err != nil {
+			fmt.Println("failed to get account address from private key")
+			panic(err)
+		} else {
+			fmt.Printf("Account address is %s \n", k.GetAddr().String())
 		}
+		clientInstance.SetKeyManager(k)
+		res, err := clientInstance.SideChainVote(1, msg.OptionYes, "bsc", rpc.Commit)
+		if err != nil {
+			panic(err)
+		}
+
+		if res.Code != 0 {
+			fmt.Printf("Failed to vote %s , txHash %s \n", k.GetAddr().String())
+			fmt.Println(res.Log)
+			os.Exit(1)
+		} else {
+			fmt.Printf("vote success %s , txHash %s \n", k.GetAddr().String(), res.Hash.String())
+		}
+	case "xxx":
+		addr := args[2]
+		v, _ := types.ValAddressFromBech32(addr)
+		fmt.Println(types.AccAddress(v.Bytes()).String())
 	case "getAddr":
 		if len(args) < 5 {
 			fmt.Println("secretName, region, account type is needed")
