@@ -20,10 +20,27 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-const numValidators = 21
+const numValidators = 2
 
-var monikers = []string{"sigm8", "namelix", "pexmons", "nariox", "tiollo", "raptas", "nozti", "coinlix", "raptoken", "glorin",
-	"Seoraksan", "defibit", "leapbnb", "ciscox", "Everest", "Ararat", "stakepulse", "piececoin", "Kita", "fuji", "Aconcagua"}
+//var monikers = []string{"BscScan", "MathWallet", "TW Staking", "CertiK"}
+var monikers = []string{"BscScan", "TW Staking"}
+
+// todo
+//var websites = []string{"https://bscscan.com", "https://mathwallet.org", "https://trustwallet.com", "https://certik.org"}
+
+var websites = []string{"https://bscscan.com", "https://trustwallet.com"}
+
+// todo
+//var details = []string{
+//	"Your Gateway to the Binance Smart Chain Network. BscScan is the leading BSC Block Chain Explorer and one of the earliest independent project built and developed for the Binance Smart Chain",
+//	"MATH is a multi-chain and cross-chain blockchain assets hub, and its products including MathWallet, MATH VPoS Pool, MathDAppStore, MathStaking, MathCustody, MathNFT, MathChain, MathHub, MathDEX, MathID, MathPay etc. MATH also operates nodes for many POS chains.",
+//	"Trust Wallet Binance Chain Validator",
+//	"CertiK, as the leading blockchain security pioneer, missions to support BSC with best-in-class security technologies and deliver provable trust for all."}
+
+var details = []string{
+	"Your Gateway to the Binance Smart Chain Network. BscScan is the leading BSC Block Chain Explorer and one of the earliest independent project built and developed for the Binance Smart Chain",
+	"Trust Wallet Binance Chain Validator",
+}
 
 type VAlAccount struct {
 	// BC
@@ -52,7 +69,6 @@ type RelayerAccount struct {
 }
 
 type NonSensitiveInfo struct {
-	RelayerAddr []string     `json:"relayer_addr"`
 	BSCAccounts []BSCAccount `json:"bsc_accounts"`
 }
 
@@ -103,7 +119,7 @@ func generateBCAccounts() {
 		if err != nil {
 			panic(fmt.Sprintf("Failed to find ledger device: %s \n", err.Error()))
 		}
-		bip44Params := keys.NewBinanceBIP44Params(0, uint32(i))
+		bip44Params := keys.NewBinanceBIP44Params(0, uint32(21+i))
 		keyManager, err := keys.NewLedgerKeyManager(bip44Params.DerivationPath())
 		if err != nil {
 			panic(fmt.Sprintf("failed to find hd address %s , index %d\n", err.Error(), i))
@@ -154,30 +170,6 @@ func generateBCAccounts() {
 		panic(err)
 	}
 
-	rAccounts := make([]RelayerAccount, 0)
-	for i := 0; i < 2; i++ {
-		raccountHex, err := randHexKey()
-		if err != nil {
-			panic(err)
-		}
-		raccount, err := newExtAcc(raccountHex)
-		if err != nil {
-			panic(err)
-		}
-		rAccounts = append(rAccounts, RelayerAccount{
-			raccountHex,
-			raccount.addr.String(),
-		})
-	}
-	bz, err = json.MarshalIndent(rAccounts, "", "\t")
-	if err != nil {
-		panic(err)
-	}
-	err = ioutil.WriteFile("Relayer-Secret.json", bz, 0666)
-	if err != nil {
-		panic(err)
-	}
-
 	bz, err = json.MarshalIndent(flist, "", "\t")
 	if err != nil {
 		panic(err)
@@ -189,8 +181,8 @@ func generateBCAccounts() {
 	}
 	nonSensitiveInfo := NonSensitiveInfo{
 		BSCAccounts: nlist,
-		RelayerAddr: []string{rAccounts[0].RelayerAddress, rAccounts[1].RelayerAddress},
 	}
+
 	bz, err = json.MarshalIndent(nonSensitiveInfo, "", "\t")
 	if err != nil {
 		panic(err)
@@ -201,16 +193,12 @@ func generateBCAccounts() {
 		panic(err)
 	}
 
-	fmt.Printf("do transfer exact   1   BNB to %s which is the operator account of first validator, it will create other operator accounts \n", klist[0].OperatorAddress)
+	fmt.Printf("do transfer exact 1 BNB to %s which is the operator account of first validator, it will create other operator accounts \n", klist[0].OperatorAddress)
 
 	for i := 0; i < numValidators; i++ {
 		amount := int64(50020)
-		if i >= 11 {
-			amount = 20020
-		}
-		fmt.Printf("do transfer exact %d BNB to %s which is validator %s, index %d of your fisrt account of ledger \n", amount, klist[i].DelegatorAddress, klist[i].Moniker, i)
+		fmt.Printf("do transfer exact %d BNB to %s which is validator %s, index %d of your fisrt account of ledger \n", amount, klist[i].DelegatorAddress, klist[i].Moniker, i+21)
 	}
-	fmt.Printf("do transfer exact 1000 BNB to bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj which is the peggy account \n")
 	return
 }
 
@@ -225,7 +213,7 @@ func createValidators(client *rpc.HTTP, skip bool) {
 		panic(err)
 	}
 	if len(klist) != numValidators {
-		panic("the item in Operator-Secret.json is not 21 ")
+		panic("the item in Operator-Secret.json is not 4 ")
 	}
 
 	newBz, err := ioutil.ReadFile("NonSensitive-Info.json")
@@ -238,7 +226,7 @@ func createValidators(client *rpc.HTTP, skip bool) {
 		panic(err)
 	}
 	if len(nlist.BSCAccounts) != numValidators {
-		panic("the item in NonSensitive-Info.json is not 21 ")
+		panic("the item in NonSensitive-Info.json is not 4 ")
 	}
 
 	// create operate account
@@ -271,9 +259,6 @@ func createValidators(client *rpc.HTTP, skip bool) {
 				panic(err)
 			}
 			amount := int64(50020)
-			if i >= 11 {
-				amount = 20020
-			}
 			b, err := client.GetBalance(del, "BNB")
 			if err != nil {
 				panic(err)
@@ -286,11 +271,8 @@ func createValidators(client *rpc.HTTP, skip bool) {
 
 	for i := 0; i < numValidators; i++ {
 		amount := types.Coin{Denom: "BNB", Amount: 5000000000000}
-		if i >= 11 {
-			amount = types.Coin{Denom: "BNB", Amount: 2000000000000}
-		}
 
-		des := msg.Description{Moniker: klist[i].Moniker, Details: fmt.Sprintf("The is %s org on BSC network", klist[i].Moniker), Website: ""}
+		des := msg.Description{Moniker: klist[i].Moniker, Details: details[i], Website: websites[i]}
 
 		rate, _ := types.NewDecFromStr("25000000")
 		maxRate, _ := types.NewDecFromStr("90000000")
@@ -302,7 +284,7 @@ func createValidators(client *rpc.HTTP, skip bool) {
 		sideConsAddr := fromHex(nlist.BSCAccounts[i].ConsensusAddress)
 		sideFeeAddr := fromHex(nlist.BSCAccounts[i].FeeAddress)
 
-		bip44Params := keys.NewBinanceBIP44Params(0, uint32(i))
+		bip44Params := keys.NewBinanceBIP44Params(0, uint32(i+21))
 		if err != nil {
 			panic(fmt.Sprintf("failed to find hd address %s , index %d\n", err.Error(), i))
 		}
@@ -398,9 +380,8 @@ func main() {
 	action := args[1]
 	switch action {
 	case "init":
-		fmt.Println("Operator-Secret.json will be generated. It contains all the private key of operator for all 21 validators.")
+		fmt.Println("Operator-Secret.json will be generated. It contains all the private key of operator for all 4 validators.")
 		fmt.Println("BSCConsensus-Secret.json.json will be generated. It contains the consensus private key needed for running BSC validator.")
-		fmt.Println("Relayer-Secret.json will be generated. It contains the relayer private key for bsc-relayer.")
 		fmt.Println("BSCFee-Secret.json will be generated. It contains the private key of fee receiver on BSC.")
 		fmt.Println("NonSensitive-Info.json will be generated. It contains the fee address and consensus address of BSC validator, it is insensitive.")
 		generateBCAccounts()
