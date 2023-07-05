@@ -1,13 +1,13 @@
-# Binance Smart Chain Setup Tool
+# BNB Smart Chain Setup Tool
 
 ## What's For
-1. Create validators for BSC. Binance Smart Chain get 21 validators in main-net launch, this tool is used to set these 21 validators up in a easy and secure way.
+1. Create validators for BSC. BNB Smart Chain get 21 validators in main-net launch, this tool is used to set these 21 validators up in a easy and secure way.
 2. A guide to setup the initial circulation on BSC.
 3. Generate the private key for Bsc-relayer.
 
 ## Financial Preparation
 
-Prepare a Binance Chain account with at least 751421 BNBs.
+Prepare a BNB Chain account with at least 751421 BNBs.
 
 - 750420 BNB. We will setup 21 validators, 11 of them will delegate 50000 BNBs, 10 of them will delegate 20000 BNB. To cover the createValidator fee, we give each validator more 20 BNB.
 So 750420 = 50000 * 11 + 20000 * 10 + 20 * 21.
@@ -24,7 +24,7 @@ We attach the built binary to the release, the binary is build on the source cod
 We need one mac desktop and one ledger, and one USB flash disk. 
 
 - Desktop. The desktop is used to sign transaction and create validator on BC. The network should be connected so we can broadcast the transaction.
-- We will use the the first 21 accounts of account0 of Ledger as the fee address of validators. Binance Chain app should be installed on ledger.
+- We will use the the first 21 accounts of account0 of Ledger as the fee address of validators. BNB Chain app should be installed on ledger.
 - We need an USB flash disk to transfer some generated files and the tool.
 
 ## Steps
@@ -35,7 +35,7 @@ We need one mac desktop and one ledger, and one USB flash disk.
 
 ### 2. Connect to ledger
 
-Connect your ledger to desktop and enter Binance Chain app, and you should see: `Binance Chain Ready` on the ledger app.
+Connect your ledger to desktop and enter BNB Chain app, and you should see: `BNB Chain Ready` on the ledger app.
 
 ### 3. Init Validator Accounts.
 
@@ -73,7 +73,7 @@ do transfer exact 1000 BNB to bnb1v8vkkymvhe2sf7gd2092ujc6hweta38xadu2pj which i
 After initialization, five files `Operator-Secret.json`, `BSCConsensus-Secret.json`, `BSCFee-Secret.json`,`Relayer-Secret.json`, `NonSensitive-Info.json` will be generated.
 
 - `Operator-Secret.json` contains private keys of operator of BSC validator. We may use it to engage governance of BSC. Do back up it immediately, we need upload it to AWS secret manager later.
-- `BSCConsensus-Secret.json` contains the consensus private keys for signing blocks on BSC, please handle it to developer or manager of Binance Chain Team after every thing is done.
+- `BSCConsensus-Secret.json` contains the consensus private keys for signing blocks on BSC, please handle it to developer or manager of BNB Chain Team after every thing is done.
 - `BSCFee-Secret.json` contains the private key of fee address on BSC. The reward will be forward to these fee address every day if the reward is very small. We will collect the reward period and need upload it to AWS secret manager later.
 - `Relayer-Secret.json` contains the relayer private key for bsc-relayer, need upload it to AWS secret manager later.
 - `NonSensitive-Info.json` contains the the fee address, relayer address which is nonsensitive, please handle it to developer later.
@@ -81,7 +81,7 @@ After initialization, five files `Operator-Secret.json`, `BSCConsensus-Secret.js
 ### 4. Check Account
 
 The output of step3 will inform you to send BNB to some address, like the ones `do transfer exact xxx BNB to xxxxx which is validator xxx, index x of your fisrt account of ledger`, 
-Please check the each address on Ledger "Binance Chain App" ==> "Your addresses" ==> "Main net", make sure they are match.
+Please check the each address on Ledger "BNB Chain App" ==> "Your addresses" ==> "Main net", make sure they are match.
 
 ### 5. Transfer BNB
 
@@ -94,7 +94,7 @@ In this step, you will sign CreateValidator transactions and broadcast them.
 
 You need confirm on Ledger for 21 times, so watch your ledger carefully.
 
-Before executing the following command, make sure your ledger is "Binance App Ready". 
+Before executing the following command, make sure your ledger is "BNB App Ready". 
 
 About 30 seconds after executing the following command, you need confirm transactions on ledger.
 
