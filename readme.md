@@ -1,3 +1,5 @@
+**This repo is archived.**
+
 # BNB Smart Chain Setup Tool
 
 ## What's For
